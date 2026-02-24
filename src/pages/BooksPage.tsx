@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, Search, Book as BookIcon, Filter, MoreHorizontal, ArrowUpDown } from 'lucide-react';
 import { bookService } from '../api/services';
-import { Book } from '../api/types';
+import { Book, BookCreateDto } from '../api/types';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import BookModal from '../components/books/BookModal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 const BooksPage: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const { isAdmin } = useAuthStore();
+
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+
+    // Confirm state
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [bookToDelete, setBookToDelete] = useState<number | null>(null);
 
     const fetchBooks = async () => {
         setIsLoading(true);
@@ -23,6 +33,57 @@ const BooksPage: React.FC = () => {
             console.error("Error fetching books", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleCreate = () => {
+        setSelectedBook(null);
+        setIsModalOpen(true);
+    };
+
+    const handleEdit = (book: Book) => {
+        setSelectedBook(book);
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteClick = (id: number) => {
+        setBookToDelete(id);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (bookToDelete) {
+            try {
+                const response = await bookService.delete(bookToDelete);
+                if (!response.error) {
+                    setBooks(prev => prev.filter(b => b.id !== bookToDelete));
+                }
+            } catch (error) {
+                console.error("Error deleting book", error);
+            } finally {
+                setIsDeleteConfirmOpen(false);
+                setBookToDelete(null);
+            }
+        }
+    };
+
+    const handleSave = async (bookDto: BookCreateDto) => {
+        if (selectedBook) {
+            // Update
+            const response = await bookService.update(selectedBook.id, bookDto);
+            if (response.error) {
+                throw { message: response.error, errors: response.errors };
+            }
+            await fetchBooks();
+            setIsModalOpen(false);
+        } else {
+            // Create
+            const response = await bookService.create(bookDto);
+            if (response.error) {
+                throw { message: response.error, errors: response.errors };
+            }
+            await fetchBooks();
+            setIsModalOpen(false);
         }
     };
 
@@ -57,7 +118,11 @@ const BooksPage: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                     >
-                        <Button className="h-12 px-6 rounded-2xl shadow-xl shadow-primary-600/20" variant="primary">
+                        <Button
+                            onClick={handleCreate}
+                            className="h-12 px-6 rounded-2xl shadow-xl shadow-primary-600/20"
+                            variant="primary"
+                        >
                             <Plus className="w-5 h-5 mr-2" />
                             Nuevo Libro
                         </Button>
@@ -173,10 +238,16 @@ const BooksPage: React.FC = () => {
                                             {isAdmin && (
                                                 <td className="px-8 py-6 text-right">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                                                        <button
+                                                            onClick={() => handleEdit(book)}
+                                                            className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                                                        >
                                                             <Pencil className="w-4 h-4" />
                                                         </button>
-                                                        <button className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all">
+                                                        <button
+                                                            onClick={() => handleDeleteClick(book.id)}
+                                                            className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all"
+                                                        >
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
                                                         <button className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
@@ -202,6 +273,24 @@ const BooksPage: React.FC = () => {
                     </div>
                 </div>
             </motion.div>
+
+            <BookModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={handleSave}
+                book={selectedBook}
+            />
+
+            <ConfirmDialog
+                isOpen={isDeleteConfirmOpen}
+                title="¿Eliminar Libro?"
+                message="Esta acción no se puede deshacer. El libro será removido permanentemente de tu catálogo y base de datos."
+                confirmLabel="Sí, Eliminar"
+                cancelLabel="No, Conservar"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setIsDeleteConfirmOpen(false)}
+                variant="danger"
+            />
         </div>
     );
 };
