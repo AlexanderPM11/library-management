@@ -8,8 +8,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
-    const { isAuthenticated, isAdmin } = useAuthStore();
+    const { isAuthenticated, isAdmin, _hasHydrated } = useAuthStore();
     const location = useLocation();
+
+    if (!_hasHydrated) {
+        return <div className="min-h-screen bg-slate-950 flex items-center justify-center font-sans text-white">Cargando sesión...</div>;
+    }
 
     if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;

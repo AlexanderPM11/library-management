@@ -74,3 +74,18 @@ export interface User {
     email: string;
     role: 'Admin' | 'User';
 }
+
+export interface RecentActivity {
+    title: string;
+    message: string;
+    type: string;
+    date: string;
+}
+
+export interface DashboardStats {
+    totalBooks: number;
+    totalAuthors: number;
+    totalCategories: number;
+    recentActivities: RecentActivity[];
+}
+
