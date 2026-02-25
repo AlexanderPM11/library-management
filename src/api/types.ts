@@ -41,6 +41,34 @@ export interface UpdateProfileDto {
     newPassword?: string;
 }
 
+export interface UserDto {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+    roles: string[];
+    isActive: boolean;
+}
+
+export interface CreateUserDto {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password?: string;
+    role: string;
+    isActive?: boolean;
+}
+
+export interface UpdateUserDto {
+    email?: string;
+    firstName: string;
+    lastName: string;
+    password?: string;
+    role?: string;
+    isActive?: boolean;
+}
+
 export interface Book {
     id: number;
     title: string;

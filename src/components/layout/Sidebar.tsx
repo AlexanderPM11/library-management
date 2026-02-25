@@ -11,7 +11,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const Sidebar: React.FC = () => {
-    const { logout, user } = useAuthStore();
+    const { logout, user, isAdmin } = useAuthStore();
 
     const menuItems = [
         { name: 'Overview', path: '/', icon: LayoutDashboard },
@@ -21,6 +21,10 @@ const Sidebar: React.FC = () => {
         { name: 'Audit Logs', path: '/audit-logs', icon: ShieldAlert },
         { name: 'My Profile', path: '/profile', icon: UserCircle },
     ];
+
+    if (isAdmin) {
+        menuItems.splice(4, 0, { name: 'Users (Admin)', path: '/users', icon: ShieldAlert }); // or any suitable index/icon
+    }
 
     return (
         <aside className="hidden lg:flex flex-col h-screen w-72 bg-slate-950/50 backdrop-blur-3xl border-r border-white/5 relative z-20">

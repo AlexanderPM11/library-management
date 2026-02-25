@@ -9,6 +9,7 @@ import AuthorsPage from './pages/AuthorsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import ProfilePage from './pages/ProfilePage';
+import UsersPage from './pages/UsersPage';
 import { useAuthStore } from './store/authStore';
 
 const App: React.FC = () => {
@@ -36,6 +37,14 @@ const App: React.FC = () => {
                     <Route path="authors" element={<AuthorsPage />} />
                     <Route path="categories" element={<CategoriesPage />} />
                     <Route path="audit-logs" element={<AuditLogsPage />} />
+                    <Route
+                        path="users"
+                        element={
+                            <ProtectedRoute requireAdmin={true}>
+                                <UsersPage />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route path="profile" element={<ProfilePage />} />
                 </Route>
 
