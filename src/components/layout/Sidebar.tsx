@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Book, Users, Tag, LayoutDashboard, LogOut, Library, ChevronRight, ShieldAlert, UserCircle } from 'lucide-react';
+import { Book, Users, Tag, LayoutDashboard, LogOut, Library, ChevronRight, ShieldAlert, UserCircle, Building2 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -23,7 +23,11 @@ const Sidebar: React.FC = () => {
     ];
 
     if (isAdmin) {
-        menuItems.splice(4, 0, { name: 'Users (Admin)', path: '/users', icon: ShieldAlert }); // or any suitable index/icon
+        menuItems.splice(4, 0, { name: 'Users (Admin)', path: '/users', icon: ShieldAlert });
+    }
+
+    if (useAuthStore.getState().isSuperAdmin) {
+        menuItems.splice(5, 0, { name: 'Branches', path: '/branches', icon: Building2 });
     }
 
     return (

@@ -10,6 +10,8 @@ import CategoriesPage from './pages/CategoriesPage';
 import AuditLogsPage from './pages/AuditLogsPage';
 import ProfilePage from './pages/ProfilePage';
 import UsersPage from './pages/UsersPage';
+import BranchesPage from './pages/BranchesPage';
+import BranchSetupPage from './pages/BranchSetupPage';
 import { useAuthStore } from './store/authStore';
 
 const App: React.FC = () => {
@@ -23,6 +25,14 @@ const App: React.FC = () => {
         <Router>
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route
+                    path="/branch-setup"
+                    element={
+                        <ProtectedRoute>
+                            <BranchSetupPage />
+                        </ProtectedRoute>
+                    }
+                />
 
                 <Route
                     path="/"
@@ -42,6 +52,14 @@ const App: React.FC = () => {
                         element={
                             <ProtectedRoute requireAdmin={true}>
                                 <UsersPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="branches"
+                        element={
+                            <ProtectedRoute requireAdmin={true}>
+                                <BranchesPage />
                             </ProtectedRoute>
                         }
                     />

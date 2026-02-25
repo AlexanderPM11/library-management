@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
-    const { isAuthenticated, isAdmin, _hasHydrated } = useAuthStore();
+    const { isAuthenticated, isAdmin, needsBranchSetup, _hasHydrated } = useAuthStore();
     const location = useLocation();
 
     if (!_hasHydrated) {
@@ -17,6 +17,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
 
     if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    // Redirect to branch setup if needed, unless already there
+    if (needsBranchSetup && location.pathname !== '/branch-setup') {
+        return <Navigate to="/branch-setup" replace />;
+    }
+
+    // Prevent access to branch setup if NOT needed
+    if (!needsBranchSetup && location.pathname === '/branch-setup') {
+        return <Navigate to="/" replace />;
     }
 
     if (requireAdmin && !isAdmin) {

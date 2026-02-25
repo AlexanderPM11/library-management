@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { User, Shield, ShieldAlert, Plus, Search, PencilLine, Mail, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { userService } from '../api/services';
-import { UserDto, CreateUserDto, UpdateUserDto } from '../api/types';
+import { userService, branchService } from '../api/services';
+import { UserDto, CreateUserDto, UpdateUserDto, Branch } from '../api/types';
 import { Button } from '../components/ui/Button';
 import { UserModal } from '../components/users/UserModal';
 import { useAuthStore } from '../store/authStore';
+import { Building } from 'lucide-react';
 
 export const UsersPage: React.FC = () => {
     const { user: currentUser } = useAuthStore();
     const [users, setUsers] = useState<UserDto[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
 
@@ -17,17 +19,24 @@ export const UsersPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserDto | undefined>();
 
-    const loadUsers = async () => {
+    const loadData = async () => {
         setIsLoading(true);
-        const { data } = await userService.getAll();
-        if (data) {
-            setUsers(data);
+        const [usersRes, branchesRes] = await Promise.all([
+            userService.getAll(),
+            branchService.getAll()
+        ]);
+
+        if (usersRes.data) {
+            setUsers(usersRes.data);
+        }
+        if (branchesRes.data) {
+            setBranches(branchesRes.data);
         }
         setIsLoading(false);
     };
 
     useEffect(() => {
-        loadUsers();
+        loadData();
     }, []);
 
     const handleCreateEdit = async (data: CreateUserDto | UpdateUserDto) => {
@@ -46,7 +55,7 @@ export const UsersPage: React.FC = () => {
         }
 
         if (response.data?.isSuccess) {
-            await loadUsers();
+            await loadData();
             return;
         }
 
@@ -125,7 +134,11 @@ export const UsersPage: React.FC = () => {
                             </div>
                             <div className="flex justify-between items-center text-xs text-slate-400">
                                 <span>Administradores:</span>
-                                <span className="font-mono text-amber-400 font-bold">{users.filter(u => u.roles.includes("Admin")).length}</span>
+                                <span className="font-mono text-amber-400 font-bold">{users.filter(u => u.roles.some(r => r === "Admin" || r === "SuperAdmin")).length}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs text-slate-400">
+                                <span>Personal Operativo:</span>
+                                <span className="font-mono text-blue-400 font-bold">{users.filter(u => u.roles.includes("Empleado")).length}</span>
                             </div>
                         </div>
                     </div>
@@ -152,6 +165,7 @@ export const UsersPage: React.FC = () => {
                                         <tr className="border-b border-white/5">
                                             <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 whitespace-nowrap bg-black/20">Operador</th>
                                             <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 whitespace-nowrap bg-black/20">Contacto & Estado</th>
+                                            <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 whitespace-nowrap bg-black/20">Sucursal</th>
                                             <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 whitespace-nowrap bg-black/20">Privilegios</th>
                                             <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 whitespace-nowrap bg-black/20 text-right">Acciones</th>
                                         </tr>
@@ -197,12 +211,25 @@ export const UsersPage: React.FC = () => {
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         {user.roles.map(role => (
                                                             <span key={role} className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-xl border flex items-center gap-1.5 whitespace-nowrap
-                                                                ${role === 'Admin' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'bg-primary-500/10 border-primary-500/20 text-primary-500 shadow-[0_0_15px_rgba(16,185,129,0.1)]'}
+                                                                ${role === 'SuperAdmin' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.1)]' :
+                                                                    role === 'Admin' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]' :
+                                                                        'bg-primary-500/10 border-primary-500/20 text-primary-500 shadow-[0_0_15px_rgba(16,185,129,0.1)]'}
                                                             `}>
                                                                 <Shield className="w-3.5 h-3.5" />
-                                                                {role === 'Admin' ? 'Administrador' : 'Usuario Obj.'}
+                                                                {role === 'SuperAdmin' ? 'Super Admin' :
+                                                                    role === 'Admin' ? 'Administrador' :
+                                                                        role === 'Empleado' ? 'Empleado' : role}
                                                             </span>
                                                         ))}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2 text-sm text-slate-300 font-medium tracking-wide">
+                                                        <Building className="w-4 h-4 text-primary-500" />
+                                                        {user.branchId
+                                                            ? (branches.find(b => b.id === user.branchId)?.name || `Sucursal #${user.branchId}`)
+                                                            : 'Acceso Global'
+                                                        }
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -239,6 +266,7 @@ export const UsersPage: React.FC = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleCreateEdit}
                 userToEdit={editingUser}
+                branches={branches}
             />
         </div>
     );

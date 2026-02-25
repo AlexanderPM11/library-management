@@ -7,7 +7,8 @@ import { jwtDecode } from 'jwt-decode';
 interface DecodedToken {
     email?: string;
     sub?: string;
-    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string | string[];
+    BranchId?: string;
     exp: number;
 }
 
@@ -16,7 +17,12 @@ interface AuthState {
     token: string | null;
     isAuthenticated: boolean;
     isAdmin: boolean;
+    isSuperAdmin: boolean;
+    isEmpleado: boolean;
+    needsBranchSetup: boolean;
+    branchId: number | null;
     login: (credentials: UserLoginDto) => Promise<{ success: boolean; error: string | null }>;
+    updateToken: (newToken: string) => void;
     logout: () => void;
     initialize: () => void;
     _hasHydrated: boolean;
@@ -30,6 +36,10 @@ export const useAuthStore = create<AuthState>()(
             token: null,
             isAuthenticated: false,
             isAdmin: false,
+            isSuperAdmin: false,
+            isEmpleado: false,
+            needsBranchSetup: false,
+            branchId: null,
             _hasHydrated: false,
             setHasHydrated: (state) => set({ _hasHydrated: state }),
 
@@ -42,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
                             get().logout();
                             return;
                         }
-                        // If token is valid, state is already managed by persist
+                        // Re-sync logic if needed
                     } catch (error) {
                         get().logout();
                     }
@@ -54,13 +64,28 @@ export const useAuthStore = create<AuthState>()(
 
                 if (data && data.isSuccess && data.token) {
                     const decoded = jwtDecode<DecodedToken>(data.token);
-                    const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] as 'Admin' | 'User' || "User";
+
+                    const roleClaim = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+                    const roles = Array.isArray(roleClaim) ? roleClaim : [roleClaim || "User"];
+
+                    const isSuperAdmin = roles.includes("SuperAdmin");
+                    const isAdmin = roles.includes("Admin");
+                    const isEmpleado = roles.includes("Empleado");
+                    const branchId = decoded.BranchId ? parseInt(decoded.BranchId) : null;
 
                     set({
                         token: data.token,
-                        user: { email: decoded.email || decoded.sub || '', role: userRole },
+                        user: {
+                            email: decoded.email || decoded.sub || '',
+                            role: roles[0],
+                            branchId: branchId
+                        },
                         isAuthenticated: true,
-                        isAdmin: userRole === 'Admin',
+                        isAdmin: isSuperAdmin || isAdmin,
+                        isSuperAdmin: isSuperAdmin,
+                        isEmpleado: isEmpleado,
+                        needsBranchSetup: isAdmin && branchId === null,
+                        branchId: branchId
                     });
                     return { success: true, error: null };
                 }
@@ -68,8 +93,43 @@ export const useAuthStore = create<AuthState>()(
                 return { success: false, error: error || "Login failed" };
             },
 
+            updateToken: (newToken: string) => {
+                const decoded = jwtDecode<DecodedToken>(newToken);
+                const roleClaim = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+                const roles = Array.isArray(roleClaim) ? roleClaim : [roleClaim || "User"];
+
+                const isSuperAdmin = roles.includes("SuperAdmin");
+                const isAdmin = roles.includes("Admin");
+                const isEmpleado = roles.includes("Empleado");
+                const branchId = decoded.BranchId ? parseInt(decoded.BranchId) : null;
+
+                set({
+                    token: newToken,
+                    user: {
+                        email: decoded.email || decoded.sub || '',
+                        role: roles[0],
+                        branchId: branchId
+                    },
+                    isAuthenticated: true,
+                    isAdmin: isSuperAdmin || isAdmin,
+                    isSuperAdmin: isSuperAdmin,
+                    isEmpleado: isEmpleado,
+                    needsBranchSetup: isAdmin && branchId === null,
+                    branchId: branchId
+                });
+            },
+
             logout: () => {
-                set({ user: null, token: null, isAuthenticated: false, isAdmin: false });
+                set({
+                    user: null,
+                    token: null,
+                    isAuthenticated: false,
+                    isAdmin: false,
+                    isSuperAdmin: false,
+                    isEmpleado: false,
+                    needsBranchSetup: false,
+                    branchId: null
+                });
             },
         }),
         {

@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldPlus, ShieldAlert, KeyRound, UserPlus, Save, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreateUserDto, UpdateUserDto, UserDto } from '../../api/types';
+import { CreateUserDto, UpdateUserDto, UserDto, Branch } from '../../api/types';
 import { Button } from '../ui/Button';
 import { SearchableSelect } from '../ui/SearchableSelect';
+import { Building2 } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 interface UserModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (user: CreateUserDto | UpdateUserDto) => Promise<void>;
     userToEdit?: UserDto;
+    branches: Branch[];
 }
 
 export const UserModal: React.FC<UserModalProps> = ({
     isOpen,
     onClose,
     onSave,
-    userToEdit
+    userToEdit,
+    branches
 }) => {
+    const { isSuperAdmin } = useAuthStore();
     const isEditMode = !!userToEdit;
 
     const [firstName, setFirstName] = useState('');
@@ -26,6 +31,7 @@ export const UserModal: React.FC<UserModalProps> = ({
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('User');
     const [isActive, setIsActive] = useState(true);
+    const [branchId, setBranchId] = useState<number | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,13 +45,15 @@ export const UserModal: React.FC<UserModalProps> = ({
                 setRole(userToEdit.roles[0] || 'User');
                 setPassword(''); // Don't pre-fill password for editing
                 setIsActive(userToEdit.isActive !== undefined ? userToEdit.isActive : true);
+                setBranchId(userToEdit.branchId);
             } else {
                 setFirstName('');
                 setLastName('');
                 setEmail('');
-                setRole('User');
+                setRole('Employee');
                 setPassword('');
                 setIsActive(true);
+                setBranchId(null);
             }
             setError(null);
         }
@@ -65,7 +73,8 @@ export const UserModal: React.FC<UserModalProps> = ({
                     email: email || undefined,
                     role: role || undefined,
                     password: password || undefined,
-                    isActive
+                    isActive,
+                    branchId
                 } as UpdateUserDto;
             } else {
                 userData = {
@@ -74,7 +83,8 @@ export const UserModal: React.FC<UserModalProps> = ({
                     email,
                     password,
                     role,
-                    isActive
+                    isActive,
+                    branchId
                 } as CreateUserDto;
             }
 
@@ -190,14 +200,30 @@ export const UserModal: React.FC<UserModalProps> = ({
                                         icon={ShieldPlus}
                                         placeholder="Seleccionar Rol..."
                                         options={[
-                                            { label: 'Administrador', value: 'Admin' },
-                                            { label: 'Usuario Operativo', value: 'User' }
+                                            { label: 'Super Administrador', value: 'SuperAdmin' },
+                                            { label: 'Administrador (Sucursal)', value: 'Admin' },
+                                            { label: 'Empleado', value: 'Empleado' }
                                         ]}
                                         value={role}
                                         onChange={(val) => setRole(val as string)}
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                {isSuperAdmin && (
+                                    <div className="space-y-2 mt-4 md:mt-0">
+                                        <SearchableSelect
+                                            label="Sucursal Asignada"
+                                            icon={Building2}
+                                            placeholder="Seleccionar Sucursal..."
+                                            options={[
+                                                { label: 'Acceso Global', value: 'null' },
+                                                ...branches.map(b => ({ label: b.name, value: b.id.toString() }))
+                                            ]}
+                                            value={branchId?.toString() || 'null'}
+                                            onChange={(val) => setBranchId(val === 'null' ? null : parseInt(val as string))}
+                                        />
+                                    </div>
+                                )}
+                                <div className="space-y-2 mt-4 md:mt-0">
                                     <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400 ml-2 flex items-center gap-1.5"><KeyRound className="w-3 h-3" /> Llave Criptográfica</label>
                                     <input
                                         required={!isEditMode}

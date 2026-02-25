@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { X, Book as BookIcon, Hash, Tag, Users, Package, Calendar, AlignLeft, Save } from 'lucide-react';
-import { Book, BookCreateDto, Author, Category } from '../../api/types';
-import { authorService, categoryService } from '../../api/services';
+import { Book, BookCreateDto, Author, Category, Branch } from '../../api/types';
+import { authorService, categoryService, branchService } from '../../api/services';
 import { Button } from '../ui/Button';
 import { SearchableSelect, SelectOption } from '../ui/SearchableSelect';
+import { Building2 } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface BookModalProps {
@@ -14,6 +16,7 @@ interface BookModalProps {
 }
 
 const BookModal: React.FC<BookModalProps> = ({ isOpen, onClose, onSave, book }) => {
+    const { isSuperAdmin } = useAuthStore();
     const [formData, setFormData] = useState<BookCreateDto>({
         title: '',
         isbn: '',
@@ -21,11 +24,13 @@ const BookModal: React.FC<BookModalProps> = ({ isOpen, onClose, onSave, book }) 
         publicationYear: new Date().getFullYear(),
         stock: 0,
         categoryId: 0,
-        authorIds: []
+        authorIds: [],
+        branchId: null
     });
 
     const [authors, setAuthors] = useState<Author[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [isLoadingFields, setIsLoadingFields] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,7 +47,8 @@ const BookModal: React.FC<BookModalProps> = ({ isOpen, onClose, onSave, book }) 
                     publicationYear: book.publicationYear,
                     stock: book.stock,
                     categoryId: book.category.id,
-                    authorIds: book.authors.map(a => a.id)
+                    authorIds: book.authors.map(a => a.id),
+                    branchId: book.branchId
                 });
             } else {
                 setFormData({
@@ -52,7 +58,8 @@ const BookModal: React.FC<BookModalProps> = ({ isOpen, onClose, onSave, book }) 
                     publicationYear: new Date().getFullYear(),
                     stock: 0,
                     categoryId: 0,
-                    authorIds: []
+                    authorIds: [],
+                    branchId: null
                 });
             }
             setError(null);
@@ -63,12 +70,14 @@ const BookModal: React.FC<BookModalProps> = ({ isOpen, onClose, onSave, book }) 
     const loadFields = async () => {
         setIsLoadingFields(true);
         try {
-            const [authorsRes, categoriesRes] = await Promise.all([
+            const [authorsRes, categoriesRes, branchesRes] = await Promise.all([
                 authorService.getAll(),
-                categoryService.getAll()
+                categoryService.getAll(),
+                branchService.getAll()
             ]);
             if (authorsRes.data) setAuthors(authorsRes.data);
             if (categoriesRes.data) setCategories(categoriesRes.data);
+            if (branchesRes.data) setBranches(branchesRes.data);
         } catch (error) {
             console.error("Error loading form fields", error);
         } finally {
@@ -251,6 +260,20 @@ const BookModal: React.FC<BookModalProps> = ({ isOpen, onClose, onSave, book }) 
                                         <p className="text-[10px] text-red-400/70 ml-1 mt-2 italic">* Selecciona al menos un autor</p>
                                     )}
                                 </div>
+
+                                {/* Branch Selection (SuperAdmin Only) */}
+                                {isSuperAdmin && (
+                                    <div className="md:col-span-2">
+                                        <SearchableSelect
+                                            label="Asignar a Sucursal"
+                                            icon={Building2}
+                                            placeholder="Seleccionar Sucursal..."
+                                            options={branches.map(b => ({ label: b.name, value: b.id }))}
+                                            value={formData.branchId || 0}
+                                            onChange={(val) => setFormData({ ...formData, branchId: val || null })}
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Description */}
                                 <div className="space-y-2 md:col-span-2">

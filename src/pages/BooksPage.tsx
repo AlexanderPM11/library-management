@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, Search, Book as BookIcon, Filter, MoreHorizontal, ArrowUpDown } from 'lucide-react';
-import { bookService } from '../api/services';
-import { Book, BookCreateDto } from '../api/types';
+import { bookService, branchService } from '../api/services';
+import { Book, BookCreateDto, Branch } from '../api/types';
+import { Building2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,9 +11,10 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 const BooksPage: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const { isAdmin } = useAuthStore();
+    const { isAdmin, isSuperAdmin } = useAuthStore();
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,9 +27,16 @@ const BooksPage: React.FC = () => {
     const fetchBooks = async () => {
         setIsLoading(true);
         try {
-            const response = await bookService.getAll();
-            if (!response.error && response.data) {
-                setBooks(response.data);
+            const [booksRes, branchesRes] = await Promise.all([
+                bookService.getAll(),
+                branchService.getAll()
+            ]);
+
+            if (!booksRes.error && booksRes.data) {
+                setBooks(booksRes.data);
+            }
+            if (!branchesRes.error && branchesRes.data) {
+                setBranches(branchesRes.data);
             }
         } catch (error) {
             console.error("Error fetching books", error);
@@ -167,6 +176,7 @@ const BooksPage: React.FC = () => {
                                 <th className="px-8 py-5">Info. Libro</th>
                                 <th className="px-8 py-5">Categoría</th>
                                 <th className="px-8 py-5">Autores</th>
+                                {isSuperAdmin && <th className="px-8 py-5">Sucursal</th>}
                                 <th className="px-8 py-5">Disponibilidad</th>
                                 {isAdmin && <th className="px-8 py-5 text-right">Acciones</th>}
                             </tr>
@@ -222,6 +232,17 @@ const BooksPage: React.FC = () => {
                                                     ))}
                                                 </div>
                                             </td>
+                                            {isSuperAdmin && (
+                                                <td className="px-8 py-6">
+                                                    <div className="flex items-center gap-2 text-[11px] text-slate-400 font-bold uppercase tracking-wider bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+                                                        <Building2 className="w-3.5 h-3.5 text-primary-500" />
+                                                        {book.branchId
+                                                            ? (branches.find(b => b.id === book.branchId)?.name || `Sucursal #${book.branchId}`)
+                                                            : 'Sin Asignar'
+                                                        }
+                                                    </div>
+                                                </td>
+                                            )}
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col gap-1.5">
                                                     <div className={`text-sm font-bold ${book.stock < 5 ? 'text-red-400' : 'text-emerald-400'}`}>

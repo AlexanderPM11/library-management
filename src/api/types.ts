@@ -32,6 +32,7 @@ export interface UserProfileDto {
     lastName: string;
     fullName: string;
     roles: string[];
+    branchId: number | null;
 }
 
 export interface UpdateProfileDto {
@@ -49,6 +50,7 @@ export interface UserDto {
     fullName: string;
     roles: string[];
     isActive: boolean;
+    branchId: number | null;
 }
 
 export interface CreateUserDto {
@@ -58,6 +60,7 @@ export interface CreateUserDto {
     password?: string;
     role: string;
     isActive?: boolean;
+    branchId?: number | null;
 }
 
 export interface UpdateUserDto {
@@ -67,6 +70,7 @@ export interface UpdateUserDto {
     password?: string;
     role?: string;
     isActive?: boolean;
+    branchId?: number | null;
 }
 
 export interface Book {
@@ -78,6 +82,7 @@ export interface Book {
     stock: number;
     category: Category;
     authors: Author[];
+    branchId: number | null;
 }
 
 export interface BookCreateDto {
@@ -88,6 +93,7 @@ export interface BookCreateDto {
     stock: number;
     categoryId: number;
     authorIds: number[];
+    branchId?: number | null;
 }
 
 export interface Author {
@@ -116,7 +122,8 @@ export interface CategoryCreateDto {
 
 export interface User {
     email: string;
-    role: 'Admin' | 'User';
+    role: string;
+    branchId: number | null;
 }
 
 export interface RecentActivity {
@@ -145,6 +152,15 @@ export interface AuditLog {
     newValues: string | null;
     affectedColumns: string | null;
     primaryKey: string;
+    branchId?: number | null;
+}
+
+export interface Branch {
+    id: number;
+    name: string;
+    address: string;
+    phoneNumber: string;
+    isActive: boolean;
 }
 
 export interface DashboardStats {
