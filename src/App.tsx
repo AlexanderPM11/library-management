@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import BooksPage from './pages/BooksPage';
 import AuthorsPage from './pages/AuthorsPage';
 import CategoriesPage from './pages/CategoriesPage';
+import AuditLogsPage from './pages/AuditLogsPage';
 import { useAuthStore } from './store/authStore';
 
 const App: React.FC = () => {
@@ -33,6 +34,7 @@ const App: React.FC = () => {
                     <Route path="books" element={<BooksPage />} />
                     <Route path="authors" element={<AuthorsPage />} />
                     <Route path="categories" element={<CategoriesPage />} />
+                    <Route path="audit-logs" element={<AuditLogsPage />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />

@@ -78,8 +78,29 @@ export interface User {
 export interface RecentActivity {
     title: string;
     message: string;
-    type: string;
-    date: string;
+    createdAt: string;
+    updatedAt?: string;
+}
+
+export enum AuditType {
+    None = 0,
+    Create = 1,
+    Update = 2,
+    Delete = 3
+}
+
+export interface AuditLog {
+    id: number;
+    userId: string | null;
+    userName?: string | null;
+    type: AuditType;
+    typeName: string;
+    tableName: string;
+    dateTime: string;
+    oldValues: string | null;
+    newValues: string | null;
+    affectedColumns: string | null;
+    primaryKey: string;
 }
 
 export interface DashboardStats {
