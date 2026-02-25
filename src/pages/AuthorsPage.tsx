@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, Search, Users, Filter, MoreHorizontal } from 'lucide-react';
 import { authorService } from '../api/services';
-import { Author } from '../api/types';
+import { Author, AuthorCreateDto } from '../api/types';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AuthorModal } from '../components/authors/AuthorModal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 const AuthorsPage: React.FC = () => {
     const [authors, setAuthors] = useState<Author[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const { isAdmin } = useAuthStore();
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
+
+    // Delete Confirmation State
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [authorToDelete, setAuthorToDelete] = useState<number | null>(null);
 
     const fetchAuthors = async () => {
         setIsLoading(true);
@@ -29,6 +39,51 @@ const AuthorsPage: React.FC = () => {
     useEffect(() => {
         fetchAuthors();
     }, []);
+
+    const handleSave = async (authorDto: AuthorCreateDto) => {
+        if (selectedAuthor) {
+            const response = await authorService.update(selectedAuthor.id, authorDto);
+            if (response.error) throw { message: response.error, errors: response.errors };
+            await fetchAuthors();
+            setIsModalOpen(false);
+        } else {
+            const response = await authorService.create(authorDto);
+            if (response.error) throw { message: response.error, errors: response.errors };
+            await fetchAuthors();
+            setIsModalOpen(false);
+        }
+    };
+
+    const handleEditClick = (author: Author) => {
+        setSelectedAuthor(author);
+        setIsModalOpen(true);
+    };
+
+    const handleAddClick = () => {
+        setSelectedAuthor(null);
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteClick = (id: number) => {
+        setAuthorToDelete(id);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (authorToDelete) {
+            try {
+                const response = await authorService.delete(authorToDelete);
+                if (!response.error) {
+                    setAuthors(prev => prev.filter(a => a.id !== authorToDelete));
+                }
+            } catch (error) {
+                console.error("Error deleting author", error);
+            } finally {
+                setIsDeleteConfirmOpen(false);
+                setAuthorToDelete(null);
+            }
+        }
+    };
 
     const filteredAuthors = authors.filter(a =>
         a.firstName.toLowerCase().includes(search.toLowerCase()) ||
@@ -57,7 +112,7 @@ const AuthorsPage: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                     >
-                        <Button className="h-12 px-6 rounded-2xl shadow-xl shadow-primary-600/20" variant="primary">
+                        <Button onClick={handleAddClick} className="h-12 px-6 rounded-2xl shadow-xl shadow-primary-600/20" variant="primary">
                             <Plus className="w-5 h-5 mr-2" />
                             Añadir Autor
                         </Button>
@@ -144,10 +199,10 @@ const AuthorsPage: React.FC = () => {
                                             {isAdmin && (
                                                 <td className="px-8 py-6 text-right">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                                                        <button onClick={() => handleEditClick(author)} className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                                                             <Pencil className="w-4 h-4" />
                                                         </button>
-                                                        <button className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all">
+                                                        <button onClick={() => handleDeleteClick(author.id)} className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all">
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
                                                         <button className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
@@ -164,6 +219,24 @@ const AuthorsPage: React.FC = () => {
                     </table>
                 </div>
             </motion.div>
+
+            <AuthorModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={handleSave}
+                author={selectedAuthor}
+            />
+
+            <ConfirmDialog
+                isOpen={isDeleteConfirmOpen}
+                title="¿Eliminar Autor?"
+                message="Esta acción no se puede deshacer. El autor será removido permanentemente de tu directorio."
+                confirmLabel="Sí, Eliminar"
+                cancelLabel="No, Conservar"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setIsDeleteConfirmOpen(false)}
+                variant="danger"
+            />
         </div>
     );
 };

@@ -5,12 +5,23 @@ import { Category } from '../api/types';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CategoryModal } from '../components/categories/CategoryModal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { CategoryCreateDto } from '../api/types';
 
 const CategoriesPage: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const { isAdmin } = useAuthStore();
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
+    // Delete Confirmation State
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
 
     const fetchCategories = async () => {
         setIsLoading(true);
@@ -29,6 +40,51 @@ const CategoriesPage: React.FC = () => {
     useEffect(() => {
         fetchCategories();
     }, []);
+
+    const handleSave = async (categoryDto: CategoryCreateDto) => {
+        if (selectedCategory) {
+            const response = await categoryService.update(selectedCategory.id, categoryDto);
+            if (response.error) throw { message: response.error, errors: response.errors };
+            await fetchCategories();
+            setIsModalOpen(false);
+        } else {
+            const response = await categoryService.create(categoryDto);
+            if (response.error) throw { message: response.error, errors: response.errors };
+            await fetchCategories();
+            setIsModalOpen(false);
+        }
+    };
+
+    const handleEditClick = (category: Category) => {
+        setSelectedCategory(category);
+        setIsModalOpen(true);
+    };
+
+    const handleAddClick = () => {
+        setSelectedCategory(null);
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteClick = (id: number) => {
+        setCategoryToDelete(id);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (categoryToDelete) {
+            try {
+                const response = await categoryService.delete(categoryToDelete);
+                if (!response.error) {
+                    setCategories(prev => prev.filter(c => c.id !== categoryToDelete));
+                }
+            } catch (error) {
+                console.error("Error deleting category", error);
+            } finally {
+                setIsDeleteConfirmOpen(false);
+                setCategoryToDelete(null);
+            }
+        }
+    };
 
     const filteredCategories = categories.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -57,7 +113,7 @@ const CategoriesPage: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                     >
-                        <Button className="h-12 px-6 rounded-2xl shadow-xl shadow-primary-600/20" variant="primary">
+                        <Button onClick={handleAddClick} className="h-12 px-6 rounded-2xl shadow-xl shadow-primary-600/20" variant="primary">
                             <Plus className="w-5 h-5 mr-2" />
                             Nueva Categoría
                         </Button>
@@ -137,10 +193,10 @@ const CategoriesPage: React.FC = () => {
                                             {isAdmin && (
                                                 <td className="px-8 py-6 text-right">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                                                        <button onClick={() => handleEditClick(category)} className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                                                             <Pencil className="w-4 h-4" />
                                                         </button>
-                                                        <button className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all">
+                                                        <button onClick={() => handleDeleteClick(category.id)} className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all">
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
                                                         <button className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
@@ -157,6 +213,24 @@ const CategoriesPage: React.FC = () => {
                     </table>
                 </div>
             </motion.div>
+
+            <CategoryModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={handleSave}
+                category={selectedCategory}
+            />
+
+            <ConfirmDialog
+                isOpen={isDeleteConfirmOpen}
+                title="¿Eliminar Categoría?"
+                message="Esta acción no se puede deshacer. La categoría será removida permanentemente."
+                confirmLabel="Sí, Eliminar"
+                cancelLabel="No, Conservar"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setIsDeleteConfirmOpen(false)}
+                variant="danger"
+            />
         </div>
     );
 };
