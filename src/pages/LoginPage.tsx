@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Library, ArrowRight, Loader2, Sparkles, BookOpen } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -99,7 +99,7 @@ const LoginPage: React.FC = () => {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <label className="block text-sm font-medium text-slate-300">Contraseña</label>
-                                    <a href="#" className="text-sm text-primary-400 hover:text-primary-300 transition-colors">¿Olvidaste tu contraseña?</a>
+                                    <Link to="/forgot-password" className="text-sm text-primary-400 hover:text-primary-300 transition-colors">¿Olvidaste tu contraseña?</Link>
                                 </div>
                                 <div className="relative">
                                     <input

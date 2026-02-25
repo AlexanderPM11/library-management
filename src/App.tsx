@@ -12,6 +12,10 @@ import ProfilePage from './pages/ProfilePage';
 import UsersPage from './pages/UsersPage';
 import BranchesPage from './pages/BranchesPage';
 import BranchSetupPage from './pages/BranchSetupPage';
+import EmailTemplatesPage from './pages/EmailTemplatesPage';
+import EmailTemplateEditor from './pages/EmailTemplateEditor';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import { useAuthStore } from './store/authStore';
 
 const App: React.FC = () => {
@@ -25,6 +29,8 @@ const App: React.FC = () => {
         <Router>
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route
                     path="/branch-setup"
                     element={
@@ -52,6 +58,30 @@ const App: React.FC = () => {
                         element={
                             <ProtectedRoute requireAdmin={true}>
                                 <UsersPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="email-templates"
+                        element={
+                            <ProtectedRoute requireAdmin={true}>
+                                <EmailTemplatesPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="email-templates/:id"
+                        element={
+                            <ProtectedRoute requireAdmin={true}>
+                                <EmailTemplateEditor />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="email-templates/new"
+                        element={
+                            <ProtectedRoute requireAdmin={true}>
+                                <EmailTemplateEditor />
                             </ProtectedRoute>
                         }
                     />

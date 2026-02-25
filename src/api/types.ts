@@ -170,3 +170,38 @@ export interface DashboardStats {
     recentActivities: RecentActivity[];
 }
 
+export enum EmailTemplateType {
+    Welcome = 0,
+    PasswordReset = 1,
+    EmailConfirmation = 2
+}
+
+export interface EmailTemplateDto {
+    id: number;
+    branchId: number | null;
+    subject: string;
+    htmlContent: string;
+    type: EmailTemplateType;
+    isActive: boolean;
+}
+
+export interface CreateEmailTemplateDto {
+    branchId: number | null;
+    subject: string;
+    htmlContent: string;
+    type: EmailTemplateType;
+    isActive?: boolean;
+}
+
+export interface UpdateEmailTemplateDto {
+    subject: string;
+    htmlContent: string;
+    type: EmailTemplateType;
+    isActive: boolean;
+}
+
+export interface PreviewRequestDto {
+    htmlContent: string;
+    variables?: Record<string, string>;
+}
+
