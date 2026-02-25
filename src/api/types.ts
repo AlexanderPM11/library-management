@@ -25,6 +25,22 @@ export interface AuthResponse {
     errors: string[];
 }
 
+export interface UserProfileDto {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+    roles: string[];
+}
+
+export interface UpdateProfileDto {
+    firstName: string;
+    lastName: string;
+    currentPassword?: string;
+    newPassword?: string;
+}
+
 export interface Book {
     id: number;
     title: string;

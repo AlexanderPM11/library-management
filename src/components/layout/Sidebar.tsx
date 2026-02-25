@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Book, Users, Tag, LayoutDashboard, LogOut, Library, ChevronRight, ShieldAlert } from 'lucide-react';
+import { Book, Users, Tag, LayoutDashboard, LogOut, Library, ChevronRight, ShieldAlert, UserCircle } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -19,6 +19,7 @@ const Sidebar: React.FC = () => {
         { name: 'Authors', path: '/authors', icon: Users },
         { name: 'Categories', path: '/categories', icon: Tag },
         { name: 'Audit Logs', path: '/audit-logs', icon: ShieldAlert },
+        { name: 'My Profile', path: '/profile', icon: UserCircle },
     ];
 
     return (

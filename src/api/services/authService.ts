@@ -1,6 +1,6 @@
 import axiosInstance from '../axiosInstance';
-import { AuthResponse, UserLoginDto, UserRegisterDto } from '../types';
-import { handleAuthRequest, WrappedResponse } from '../apiWrapper';
+import { AuthResponse, UserLoginDto, UserRegisterDto, UserProfileDto, UpdateProfileDto, ApiResponse } from '../types';
+import { handleAuthRequest, handleApiRequest, WrappedResponse } from '../apiWrapper';
 
 export const authService = {
     login: async (loginDto: UserLoginDto): Promise<WrappedResponse<AuthResponse>> => {
@@ -9,4 +9,10 @@ export const authService = {
     register: async (registerDto: UserRegisterDto): Promise<WrappedResponse<AuthResponse>> => {
         return handleAuthRequest(axiosInstance.post<AuthResponse>('/auth/register', registerDto));
     },
+    getProfile: async (): Promise<WrappedResponse<UserProfileDto>> => {
+        return handleApiRequest(axiosInstance.get<ApiResponse<UserProfileDto>>('/auth/profile'));
+    },
+    updateProfile: async (updateDto: UpdateProfileDto): Promise<WrappedResponse<AuthResponse>> => {
+        return handleAuthRequest(axiosInstance.put<AuthResponse>('/auth/profile', updateDto));
+    }
 };

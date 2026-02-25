@@ -167,9 +167,8 @@ const DashboardPage: React.FC = () => {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-semibold text-white mb-1">{activity.message}</p>
-                                            <p className="text-xs text-slate-500">{activity.title} • {activity.date}</p>
+                                            <p className="text-xs text-slate-500">{activity.title} • {new Date(activity.createdAt).toLocaleDateString()}</p>
                                         </div>
-                                        <div className="text-[10px] font-bold text-slate-600 bg-white/5 px-2 py-1 rounded-md uppercase">{activity.type}</div>
                                     </motion.div>
                                 ))
                             ) : (
