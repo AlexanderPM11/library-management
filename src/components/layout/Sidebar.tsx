@@ -10,7 +10,12 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     const { logout, user, isAdmin } = useAuthStore();
 
     const menuItems = [
@@ -32,16 +37,29 @@ const Sidebar: React.FC = () => {
     }
 
     return (
-        <aside className="hidden lg:flex flex-col h-screen w-72 bg-slate-950/50 backdrop-blur-3xl border-r border-white/5 relative z-20">
+        <aside className={cn(
+            "fixed inset-y-0 left-0 z-50 w-72 bg-slate-950/95 backdrop-blur-3xl border-r border-white/5 transition-transform duration-300 lg:translate-x-0 lg:static lg:bg-slate-950/50 flex flex-col h-screen",
+            isOpen ? "translate-x-0" : "-translate-x-full"
+        )}>
             {/* Top Branding */}
-            <div className="p-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-primary-500/20 ring-1 ring-white/10">
-                        <Library className="w-5 h-5 text-white" />
+            <div className="p-8 flex items-center justify-between">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-primary-500/20 ring-1 ring-white/10">
+                            <Library className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-xl font-display font-bold text-white tracking-tight">LibraryApp</span>
                     </div>
-                    <span className="text-xl font-display font-bold text-white tracking-tight">LibraryApp</span>
+                    <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">LMS Management</p>
                 </div>
-                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 ml-1">LMS Management</p>
+                
+                {/* Close button for mobile */}
+                <button 
+                    onClick={onClose}
+                    className="lg:hidden p-2 text-slate-400 hover:text-white transition-colors"
+                >
+                    <LogOut className="w-5 h-5 rotate-180" /> {/* Using logout icon rotated as a temporary close button or could use X if available */}
+                </button>
             </div>
 
             {/* Navigation */}
@@ -54,6 +72,7 @@ const Sidebar: React.FC = () => {
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        onClick={onClose}
                         className={({ isActive }) =>
                             cn(
                                 "group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",

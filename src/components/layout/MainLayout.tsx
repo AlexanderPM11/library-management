@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAuthStore } from '../../store/authStore';
-import { Bell, Search, Menu } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Bell, Search, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MainLayout: React.FC = () => {
     const { user } = useAuthStore();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
     return (
         <div className="flex h-screen bg-slate-950 text-slate-100 w-full overflow-hidden font-sans selection:bg-primary-500/30">
@@ -14,14 +18,30 @@ const MainLayout: React.FC = () => {
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-600/10 rounded-full blur-[120px] pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-            <Sidebar />
+            {/* Backdrop for mobile */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={closeMobileMenu}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                    />
+                )}
+            </AnimatePresence>
+
+            <Sidebar isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
 
             <div className="flex flex-col flex-1 overflow-hidden relative z-10">
                 {/* Premium Header */}
                 <header className="h-20 bg-slate-950/40 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8 z-20">
                     <div className="flex items-center gap-4 flex-1">
-                        <button className="lg:hidden p-2 text-slate-400 hover:bg-white/5 rounded-lg">
-                            <Menu className="w-6 h-6" />
+                        <button 
+                            onClick={toggleMobileMenu}
+                            className="lg:hidden p-2 text-slate-400 hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
 
                         <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-white/[0.03] border border-white/5 rounded-xl w-96 group focus-within:bg-white/5 focus-within:border-primary-500/30 transition-all">
