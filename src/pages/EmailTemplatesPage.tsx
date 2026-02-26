@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { emailTemplatesService } from '../api/services/emailTemplatesService';
 import { EmailTemplateDto, EmailTemplateType } from '../api/types';
-import { Mail, Edit2, Plus, RefreshCw, Trash2, CheckCircle, XCircle, Globe, LayoutTemplate, Sparkles, AlertCircle } from 'lucide-react';
+import { Mail, Edit2, Plus, RefreshCw, Trash2, CheckCircle, XCircle, Globe, LayoutTemplate, Sparkles, AlertCircle, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { emailTemplatesExamples } from '../utils/emailTemplatesExamples';
 
 const EmailTemplatesPage: React.FC = () => {
   const [templates, setTemplates] = useState<EmailTemplateDto[]>([]);
@@ -55,6 +56,19 @@ const EmailTemplatesPage: React.FC = () => {
       case EmailTemplateType.EmailConfirmation: return 'Confirmación';
       default: return 'Desconocido';
     }
+  };
+
+  const handleDownloadExamples = () => {
+    const textContent = `=== PLANTILLA DE BIENVENIDA ===\n\n${emailTemplatesExamples.welcome}\n\n\n=== PLANTILLA DE RECUPERACIÓN DE CONTRASEÑA ===\n\n${emailTemplatesExamples.passwordReset}\n\n\n=== PLANTILLA DE CONFIRMACIÓN DE CORREO ===\n\n${emailTemplatesExamples.emailConfirmation}`;
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ejemplos_plantillas_correo.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   // Animation variants
@@ -113,6 +127,14 @@ const EmailTemplatesPage: React.FC = () => {
             transition={{ delay: 0.3 }}
             className="flex items-center gap-3"
           >
+            <button
+              onClick={handleDownloadExamples}
+              className="p-3 text-fuchsia-400 hover:text-white transition-all bg-fuchsia-500/10 hover:bg-fuchsia-500/20 rounded-xl border border-fuchsia-500/20 backdrop-blur-md flex items-center gap-2"
+              title="Descargar ejemplos base"
+            >
+              <Download className="h-5 w-5" />
+              <span className="hidden sm:inline text-sm font-bold">Ejemplos</span>
+            </button>
             <button
               onClick={loadTemplates}
               className="p-3 text-slate-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 hover:border-white/20 backdrop-blur-md"
