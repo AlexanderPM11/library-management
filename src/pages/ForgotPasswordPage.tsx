@@ -120,20 +120,32 @@ const ForgotPasswordPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="hidden lg:block relative w-0 flex-1 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1a1c23] to-[#0f1117] z-0" />
-                <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] bg-primary-500/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
-                <div className="absolute -bottom-[20%] -left-[10%] w-[70%] h-[70%] bg-fuchsia-500/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
-                
-                <div className="absolute inset-0 flex items-center justify-center p-12 z-10">
-                    <div className="max-w-xl text-center">
-                        <h2 className="text-4xl font-display font-bold text-white mb-6 leading-tight">
-                            Recupera el control de tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-fuchsia-400">seguridad</span>.
-                        </h2>
-                        <p className="text-lg text-slate-400 leading-relaxed font-light">
-                            Te proporcionaremos acceso seguro de inmediato empleando confirmación tokenizada a tu correo.
-                        </p>
+            {/* Right side artistic feature */}
+            <div className="hidden lg:flex flex-1 relative items-center justify-center bg-slate-950 p-8">
+                <div className="absolute inset-0 z-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2790&auto=format&fit=crop')] bg-cover bg-center grayscale mix-blend-luminosity"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent z-0"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-transparent to-transparent z-0"></div>
+
+                <div
+                    className="relative z-10 max-w-2xl text-center transform transition-all duration-1000 ease-out translate-y-0 opacity-100"
+                >
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8">
+                        <span className="flex h-2 w-2 rounded-full bg-primary-500 animate-pulse"></span>
+                        <span className="text-xs font-medium text-slate-300 uppercase tracking-wider">Sistema de Gestión Avanzado</span>
                     </div>
+                    <h1 className="text-6xl font-display font-medium text-white leading-[1.1] mb-6 tracking-tight">
+                        La sabiduría del mundo, organizada con <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-fuchsia-400 italic">elegancia</span>.
+                    </h1>
+                    <p className="text-xl text-slate-400 font-light max-w-xl mx-auto leading-relaxed">
+                        Control de inventario, gestión de autores y catalogación fluida con una interfaz moderna y audaz diseñada para curadores exigentes.
+                    </p>
+                </div>
+
+                {/* Decorative floating elements */}
+                <div
+                    className="absolute top-1/4 left-1/4 w-32 h-32 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-xl -rotate-12 shadow-2xl flex items-center justify-center animate-[float_6s_ease-in-out_infinite]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-book-open text-white/30"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                 </div>
             </div>
         </div>

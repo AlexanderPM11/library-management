@@ -15,10 +15,10 @@ export const authService = {
     updateProfile: async (updateDto: UpdateProfileDto): Promise<WrappedResponse<AuthResponse>> => {
         return handleAuthRequest(axiosInstance.put<AuthResponse>('/auth/profile', updateDto));
     },
-    forgotPassword: async (email: string): Promise<WrappedResponse<any>> => {
-        return handleApiRequest(axiosInstance.post<ApiResponse<any>>('/auth/forgot-password', { email }));
+    forgotPassword: async (email: string): Promise<WrappedResponse<AuthResponse>> => {
+        return handleAuthRequest(axiosInstance.post<AuthResponse>('/auth/forgot-password', { email }));
     },
-    resetPassword: async (data: { email: string; token: string; newPassword: string }): Promise<WrappedResponse<any>> => {
-        return handleApiRequest(axiosInstance.post<ApiResponse<any>>('/auth/reset-password', data));
+    resetPassword: async (data: { email: string; token: string; newPassword: string }): Promise<WrappedResponse<AuthResponse>> => {
+        return handleAuthRequest(axiosInstance.post<AuthResponse>('/auth/reset-password', data));
     }
 };

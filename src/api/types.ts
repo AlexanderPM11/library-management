@@ -171,9 +171,9 @@ export interface DashboardStats {
 }
 
 export enum EmailTemplateType {
-    Welcome = 0,
-    PasswordReset = 1,
-    EmailConfirmation = 2
+    Welcome = 1,
+    PasswordReset = 2,
+    EmailConfirmation = 3
 }
 
 export interface EmailTemplateDto {
