@@ -129,8 +129,8 @@ export interface User {
 export interface RecentActivity {
     title: string;
     message: string;
-    createdAt: string;
-    updatedAt?: string;
+    type: string;
+    date: string;
 }
 
 export enum AuditType {
@@ -163,11 +163,31 @@ export interface Branch {
     isActive: boolean;
 }
 
+export interface CategoryDistribution {
+    categoryName: string;
+    bookCount: number;
+}
+
 export interface DashboardStats {
     totalBooks: number;
     totalAuthors: number;
     totalCategories: number;
     recentActivities: RecentActivity[];
+    booksByCategory: CategoryDistribution[];
+}
+
+export interface BranchBookCount {
+    branchName: string;
+    bookCount: number;
+}
+
+export interface SuperAdminStats {
+    totalBranches: number;
+    totalActiveUsers: number;
+    totalSystemBooks: number;
+    activeBranchesCount: number;
+    topBranchesByBooks: BranchBookCount[];
+    globalActivities: RecentActivity[];
 }
 
 export enum EmailTemplateType {
